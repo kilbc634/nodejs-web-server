@@ -30,7 +30,15 @@ app.use(session({
 }));
 
 app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/index.html'); 
+    res.redirect('/index');
+});
+
+app.get('/index(.html)?', function (req, res) {
+    if (req.session.loginUser) {
+        res.sendFile(__dirname + '/index.html'); 
+    } else {
+        res.redirect('/login');
+    }
 });
 
 app.get('/login(.html)?', function (req, res) {
@@ -38,9 +46,41 @@ app.get('/login(.html)?', function (req, res) {
 });
 
 app.post('/login', function (req, res) {
-    // var name = req.body.firstName + ' ' + req.body.lastName;
-    // res.send(name + ' Submitted Successfully!');
+    var account = req.body['account'];
+    var key = 'account/' + account;
+    var password = md5(req.body['password']);
+    RedisClient.get(key, (err, result) => {
+        if (result === null) {
+            res.json({
+                status: 'ERROR',
+                msg: 'This account not exists'
+            });
+            return;
+        }
+        var accountData = JSON.parse(result);
+        if (password != accountData['password']) {
+            res.json({
+                status: 'ERROR',
+                msg: 'Wrong password'
+            });
+            return;
+        }
+        req.session.regenerate((err) => {
+            req.session.loginUser = account;
+            res.json({
+                status: 'OK',
+                msg: 'Login success'
+            });
+        });
+    })
 });
+
+app.get('/logout(.html)?', function (req, res) {
+    req.session.destroy((err) => {
+        //req.session.loginUser = null;
+    });
+    res.redirect('login');
+})
 
 app.get('/signup(.html)?', function (req, res) {
     res.sendFile(__dirname + '/signup.html');
@@ -49,24 +89,19 @@ app.get('/signup(.html)?', function (req, res) {
 app.post('/signup', function (req, res) {
     var account = req.body['account'];
     var key = 'account/' + account;
-    var value = {
+    var setValue = {
         password: md5(req.body['password']),
         nick: req.body['nick']
     }
-    RedisClient.get(key, (error, result) => {
-        console.log(result);
+    RedisClient.get(key, (err, result) => {
         if (result === null) {
-            if (error) {console.error(error);}
-            console.log('will sign up for ' + account);
-            RedisClient.set(key, JSON.stringify(value), (error) => {
-                if (error) {console.error(error);}
+            RedisClient.set(key, JSON.stringify(setValue), (err) => {
                 res.json({
                     status: 'OK',
                     msg: 'Sign up complated'
                 });
-            })
+            });
         } else {
-                console.log('failed to sign up for ' + account);
                 res.json({
                     status: 'ERROR',
                     msg: 'This account is exists'

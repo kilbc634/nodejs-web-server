@@ -1,5 +1,29 @@
 $(function () {
 
+    function post_login(account, password) {
+        var obj = {
+            account: account,
+            password: password
+        };
+        var data = JSON.stringify(obj);
+        $.ajax({
+            url: '/login',
+            type: 'POST',
+            data: data,
+            async: true,
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (resp) {
+                var status = resp['status'];
+                if (status == 'OK') {
+                    location.assign('index');
+                } else {
+                    console.error(resp['msg'])
+                }
+            }
+        });
+    }
+
     function post_signup(account, password, nick='') {
         var obj = {
             account: account,
@@ -17,7 +41,7 @@ $(function () {
             success: function (resp) {
                 var status = resp['status'];
                 if (status == 'OK') {
-                    location.assign('login.html');
+                    location.assign('login');
                 } else {
                     console.error(resp['msg'])
                 }
@@ -26,7 +50,9 @@ $(function () {
     }
 
     $('#login-button').click(function () {
-        // alert('you click #login-button');
+        var account = $('#account-input').val();
+        var password = $('#password-input').val();
+        post_login(account, password);
     });
 
     $('#signup-button').click(function () {
