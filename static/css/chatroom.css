@@ -57,7 +57,7 @@ body, html {
     background-color: rgba(0, 0, 0, 0.3) !important;
     border: 0 !important;
     color: white !important;
-    height: 60px;
+    height: 35px;
     overflow-y: auto;
 }
 
@@ -161,12 +161,12 @@ body, html {
     color: rgba(255, 255, 255, 0.6);
 }
 
-.video_cam {
+.uesr_setting {
     margin-left: 50px;
     margin-top: 5px;
 }
 
-.video_cam span {
+.uesr_setting span {
     color: white;
     font-size: 20px;
     cursor: pointer;
@@ -215,8 +215,8 @@ body, html {
 
 #action_menu_btn {
     position: absolute;
-    right: 10px;
-    top: 10px;
+    right: 15px;
+    top: 5px;
     color: white;
     cursor: pointer;
     font-size: 20px;
@@ -229,8 +229,8 @@ body, html {
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
     border-radius: 15px;
-    top: 30px;
-    right: 15px;
+    top: 10px;
+    right: 38px;
     display: none;
 }
 
