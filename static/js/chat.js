@@ -2,14 +2,23 @@ $(function () {
     moment.tz.setDefault("Asia/Taipei");
     var socket = io.connect();
     var begin = 0;
+    var msgVueTemplate = $('#msgVue').html();
 
-    var msg_card_body = new Vue({
-        el: '.msg_card_body',
+    var VchatMessages = new Vue({
         data: {
             msgList: []
         }
     })
 
+    function applyScroll(selector) {
+        // will return DOM element of mCustomScrollbar container
+        var mcs = $(selector).mCustomScrollbar({
+            theme: 'dark-3'
+        });
+        var mcsContainer = mcs.find('.mCSB_container')[0];
+        return mcsContainer;
+    }
+    
     function loadMessages(begin, amount=20) {
         var data = {
             begin: begin,
@@ -24,7 +33,7 @@ $(function () {
             success: function (resp) {
                 var dataList = resp['chatMessages'];
                 for (data of dataList) {
-                    msg_card_body.msgList.unshift(
+                    VchatMessages.msgList.unshift(
                         {text: data['text'], date: moment.unix(data['timestamp']).format('YYYY-MM-DD HH:mm:ss')}
                     )
                 }
@@ -37,12 +46,14 @@ $(function () {
         var msg = $('textarea.type_msg').val();
         if (msg.trim() == '') {
             $('textarea.type_msg').val(null);
+            autosize.update($('textarea.type_msg'));
             return false;
         }
         socket.emit('sendMessage', {
             msg: msg.trim()
         });
         $('textarea.type_msg').val(null);
+        autosize.update($('textarea.type_msg'));
     }
 
     $('.send_btn').click(function () {
@@ -63,7 +74,7 @@ $(function () {
     function newMessage(data) {
         var msg = data['msg'];
         var ts = data['timestamp'];
-        msg_card_body.msgList.push(
+        VchatMessages.msgList.push(
             {text: msg, date: moment.unix(ts).format('YYYY-MM-DD HH:mm:ss')}
         )
     }
@@ -82,8 +93,9 @@ $(function () {
     $('#action_menu_btn').click(function () {
         $('.action_menu').toggle();
     });
-    $('.msg_card_body').mCustomScrollbar();
-    autosize(document.querySelectorAll('[data-autosize="true"]'));
+    autosize($('[data-autosize="true"]'));
+    var scrollContainer = applyScroll('.msg_card_body');
+    $(scrollContainer).append(msgVueTemplate);
+    VchatMessages.$mount(scrollContainer);
     begin += loadMessages(begin);
-
 });
