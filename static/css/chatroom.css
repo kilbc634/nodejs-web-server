@@ -1,6 +1,7 @@
 body, html {
     height: 100%;
     margin: 0;
+    font-size:16px;
     background: #7F7FD5;
     background: -webkit-linear-gradient(to right, #91EAE4, #86A8E7, #7F7FD5);
     background: linear-gradient(to right, #91EAE4, #86A8E7, #7F7FD5);
@@ -171,6 +172,18 @@ body, html {
     font-size: 20px;
     cursor: pointer;
     margin-right: 20px;
+}
+
+.msg_header {
+    font-size: 1rem;
+}
+
+.msg_user_name {
+    position: relative;
+}
+
+.msg_datetime {
+    position: relative;
 }
 
 .msg_cotainer {

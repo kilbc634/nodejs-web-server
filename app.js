@@ -138,16 +138,42 @@ app.get('/get_chatMessages', function (req, res) {
             var msgs = [];
             for (var string of result) {
                 var msg = JSON.parse(string);
+                msg = {
+                    timestamp: msg['timestamp'],
+                    userId: msg['user'],
+                    msg: msg['text']
+                }
                 msgs.push(msg);
             }
             res.json({
                 chatMessages: msgs
-            })
+            });
         } else {
             res.json({
                 chatMessages: []
-            })
+            });
         }
+    });
+});
+
+app.get('/get_userData', function (req, res) {
+    if (!req.session.loginUser) {
+        res.status(403).send('Permission denied');
+        return;
+    }
+    var userId = req.query['userId'] || req.session.loginUser;
+    var key = 'account/' + userId;
+    RedisClient.get(key, (err, result) => {
+        var userData = JSON.parse(result);
+        var resData = {
+            userId: userId,
+            userNick: userData['nick'] || '',
+            userImg: userData['img'] || ''
+        }
+        if (userId == req.session.loginUser) {
+            resData['self'] = true;
+        }
+        res.json(resData);
     });
 });
 
@@ -183,6 +209,7 @@ socketApp.on('connection', (socket) => {
         RedisClient.lpush(key, JSON.stringify(setValue));
         socketApp.to(room).emit('newMessage', {
             timestamp: ts,
+            userId: loginUser,
             msg: msg
         });
     });

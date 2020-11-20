@@ -3,10 +3,28 @@ $(function () {
     var socket = io.connect();
     var begin = 0;
     var msgVueTemplate = $('#msgVue').html();
+    var __loginUser = '';
+    var userData = {
+        'defaultUserId': {
+            'userId': 'defaultUserId',
+            'userNick': 'defaultUserNick',
+            'userIcon': 'defaultUserIcon'
+        }
+    };
 
     var VchatMessages = new Vue({
         data: {
+            // {text: 'string', userName: 'string', date: 'string', userId: 'string'}
             msgList: []
+        },
+        methods: {
+            updateUserName: function (userId, userName) {
+                for (msg of this.msgList) {
+                    if (msg['userId'] == userId) {
+                        msg.userName = userName;
+                    }
+                }
+            }
         }
     })
 
@@ -27,6 +45,48 @@ $(function () {
             }, 15);
         });
     }
+
+    function loadUserData(userId='') {
+        var data = null;
+        if (userId) {
+            data = { userId: userId }
+            userData[userId] = 'pending';
+        }
+        $.ajax({
+            url: '/get_userData',
+            type: 'GET',
+            data: data,
+            async: true,
+            dataType: 'json',
+            success: function (resp) {
+                var userId = resp['userId'];
+                var userNick = resp['userNick'];
+                var userImg = resp['userImg'];
+                userData[userId] = {};
+                userData[userId]['userId'] = userId;
+                userData[userId]['userNick'] = userNick;
+                userData[userId]['userImg'] = userImg;
+                if ('self' in resp) {
+                    __loginUser = userId;
+                }
+                VchatMessages.updateUserName(userId, userNick || userId);
+            }
+        });
+    }
+
+    function getUserName(userId) {
+        var displayName = '';
+        if (userId in userData) {
+            if (userData[userId]['userNick']) {
+                displayName = userData[userId]['userNick'];
+            } else {
+                displayName = userData[userId]['userId'];
+            }
+        } else {
+            loadUserData(userId);
+        }
+        return displayName;
+    }
     
     function loadMessages(begin, amount=20) {
         var data = {
@@ -42,9 +102,12 @@ $(function () {
             success: function (resp) {
                 var dataList = resp['chatMessages'];
                 for (data of dataList) {
-                    VchatMessages.msgList.unshift(
-                        {text: data['text'], date: moment.unix(data['timestamp']).format('YYYY-MM-DD HH:mm:ss')}
-                    )
+                    VchatMessages.msgList.unshift({
+                            text: data['msg'],
+                            userName: getUserName(data['userId']),
+                            date: moment.unix(data['timestamp']).format('YYYY-MM-DD HH:mm:ss'),
+                            userId: data['userId']
+                    });
                 }
             },
             complete: function () {
@@ -88,9 +151,13 @@ $(function () {
     function newMessage(data) {
         var msg = data['msg'];
         var ts = data['timestamp'];
-        VchatMessages.msgList.push(
-            {text: msg, date: moment.unix(ts).format('YYYY-MM-DD HH:mm:ss')}
-        )
+        var userId = data['userId'];
+        VchatMessages.msgList.push({
+            text: msg,
+            userName: getUserName(userId),
+            date: moment.unix(ts).format('YYYY-MM-DD HH:mm:ss'),
+            userId: userId
+        });
         updateScrollbar('.msg_card_body');
     }
 

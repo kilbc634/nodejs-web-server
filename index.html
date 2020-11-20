@@ -64,9 +64,16 @@
             <div class="img_cont_msg">
                 <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg" class="rounded-circle user_img_msg">
             </div>
+            <h2 class="msg_header">
+                <span class="msg_user_name" v-if="msg.userName != ''">
+                    {{msg.userName}}
+                </span>
+                <span class="msg_datetime">
+                    {{msg.date}}
+                </span>
+            </h2>
             <div class="msg_cotainer">
                 {{msg.text}}
-                <span class="msg_time">{{msg.date}}</span>
             </div>
         </div>
     </template>
