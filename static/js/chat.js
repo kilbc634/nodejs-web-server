@@ -10,13 +10,22 @@ $(function () {
         }
     })
 
-    function applyScroll(selector) {
+    function applyScrollbar(selector) {
         // will return DOM element of mCustomScrollbar container
         var mcs = $(selector).mCustomScrollbar({
             theme: 'dark-3'
         });
         var mcsContainer = mcs.find('.mCSB_container')[0];
         return mcsContainer;
+    }
+
+    function updateScrollbar(selector, duration=300) {
+        setTimeout(() => {
+            $(selector).mCustomScrollbar('update').mCustomScrollbar('scrollTo', 'bottom', {
+                scrollEasing: 'easeOut',
+                scrollInertia: duration
+            }, 15);
+        });
     }
     
     function loadMessages(begin, amount=20) {
@@ -37,6 +46,11 @@ $(function () {
                         {text: data['text'], date: moment.unix(data['timestamp']).format('YYYY-MM-DD HH:mm:ss')}
                     )
                 }
+            },
+            complete: function () {
+                if (begin == 0) {
+                    updateScrollbar('.msg_card_body', 0);
+                }
             }
         });
         return amount;
@@ -53,7 +67,7 @@ $(function () {
             msg: msg.trim()
         });
         $('textarea.type_msg').val(null);
-        autosize.update($('textarea.type_msg'));
+        autosize.update($('[data-autosize="true"]'));
     }
 
     $('.send_btn').click(function () {
@@ -77,6 +91,7 @@ $(function () {
         VchatMessages.msgList.push(
             {text: msg, date: moment.unix(ts).format('YYYY-MM-DD HH:mm:ss')}
         )
+        updateScrollbar('.msg_card_body');
     }
 
     socket.on('newMessage', function (data) {
@@ -94,7 +109,7 @@ $(function () {
         $('.action_menu').toggle();
     });
     autosize($('[data-autosize="true"]'));
-    var scrollContainer = applyScroll('.msg_card_body');
+    var scrollContainer = applyScrollbar('.msg_card_body');
     $(scrollContainer).append(msgVueTemplate);
     VchatMessages.$mount(scrollContainer);
     begin += loadMessages(begin);
