@@ -23,8 +23,8 @@
                                 <span class="online_icon"></span>
                             </div>
                             <div class="user_info">
-                                <span>Your User Name</span>
-                                <p>1767 Messages</p>
+                                <span>{{headerName}}</span>
+                                <p>{{headerStatus}}</p>
                             </div>
                             <div class="uesr_setting">
                                 <span><i class="fas fa-camera"></i></span>
@@ -60,7 +60,7 @@
     </div>
     <!-- Template Zone -->
     <template id="msgVue">
-        <div class="element_msg d-flex justify-content-start mb-4" v-for="msg in msgList">
+        <div class="msg_box flex-column justify-content-start mb-4" v-for="msg in msgList">
             <div class="img_cont_msg">
                 <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg" class="rounded-circle user_img_msg">
             </div>

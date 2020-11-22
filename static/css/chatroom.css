@@ -127,8 +127,11 @@ body, html {
 }
 
 .img_cont_msg {
+    position: absolute;
     height: 40px;
     width: 40px;
+    left: 0px;
+    top: 5px;
 }
 
 .online_icon {
@@ -174,27 +177,35 @@ body, html {
     margin-right: 20px;
 }
 
+.msg_box {
+    position: relative;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+
 .msg_header {
     font-size: 1rem;
 }
 
 .msg_user_name {
-    position: relative;
+    color: #f5f6fa;
+    margin-right: .25rem;
 }
 
 .msg_datetime {
-    position: relative;
+    color: #bbbbbb;
 }
 
 .msg_cotainer {
+    font-size: 1rem;
     margin-top: auto;
     margin-bottom: auto;
-    margin-left: 10px;
     border-radius: 25px;
     background-color: #82ccdd;
     padding: 10px;
     position: relative;
-    max-width: 70%;
+    max-width: 75%;
+    width: fit-content;
 }
 
 .msg_cotainer_send {

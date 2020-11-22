@@ -12,6 +12,14 @@ $(function () {
         }
     };
 
+    var VheaderContent = new Vue({
+        el: '.msg_head div',
+        data: {
+            headerName: '',
+            headerStatus: '(Loading....)'
+        }
+    })
+
     var VchatMessages = new Vue({
         data: {
             // {text: 'string', userName: 'string', date: 'string', userId: 'string'}
@@ -68,8 +76,10 @@ $(function () {
                 userData[userId]['userImg'] = userImg;
                 if ('self' in resp) {
                     __loginUser = userId;
+                    VheaderContent.headerName = getUserName(userId);
+                    VheaderContent.headerStatus = '(Normal status)'
                 }
-                VchatMessages.updateUserName(userId, userNick || userId);
+                VchatMessages.updateUserName(userId, getUserName(userId));
             }
         });
     }
@@ -179,5 +189,6 @@ $(function () {
     var scrollContainer = applyScrollbar('.msg_card_body');
     $(scrollContainer).append(msgVueTemplate);
     VchatMessages.$mount(scrollContainer);
+    loadUserData();
     begin += loadMessages(begin);
 });
