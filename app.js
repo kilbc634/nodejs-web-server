@@ -125,6 +125,8 @@ app.post('/signup', function (req, res) {
     });
 });
 
+// --------------------- User service
+
 app.get('/get_chatMessages', function (req, res) {
     if (!req.session.loginUser) {
         res.status(403).send('Permission denied');
@@ -175,6 +177,35 @@ app.get('/get_userData', function (req, res) {
         }
         res.json(resData);
     });
+});
+
+app.post('/post_userNick', function (req, res) {
+    if (!req.session.loginUser) {
+        res.status(403).send('Permission denied');
+        return;
+    }
+    if ('userNick' in req.body) {
+        var userNick = req.body['userNick']
+        var key = 'account/' + req.session.loginUser;
+        RedisClient.get(key, (err, result) => {
+            var userData = JSON.parse(result);
+            userData['nick'] = userNick;
+            RedisClient.set(key, JSON.stringify(userData), (err) => {
+                res.json({
+                    status: 'OK',
+                    msg: 'Set user nick complated',
+                    userId: req.session.loginUser,
+                    userNick: userData['nick']
+                });
+            });
+        });
+    } else {
+        res.json({
+            status: 'ERROR',
+            msg: 'Endpoint /post_userNick need a "userNick" data'
+        });
+    }
+
 });
 
 // --------------------- Socket.io init

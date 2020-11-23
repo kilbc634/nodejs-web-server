@@ -36,6 +36,21 @@ $(function () {
         }
     })
 
+    var VsetNick = new Vue({
+        el: '#modal_setNick .modal-content',
+        data: {
+            userNick: ''
+        },
+        methods: {
+            clear: function () {
+                this.userNick = '';
+            },
+            reset: function () {
+                this.userNick = userData[__loginUser]['userNick'];
+            }
+        }
+    })
+
     function applyScrollbar(selector) {
         // will return DOM element of mCustomScrollbar container
         var mcs = $(selector).mCustomScrollbar({
@@ -147,6 +162,41 @@ $(function () {
         sendMessage();
     });
 
+    function closeModalByPath(selector) {
+        if ($(selector).hasClass('show')) {
+            $(selector).modal('toggle');
+        }
+    }
+
+    function postUserNick(nick) {
+        var data = {
+            userNick: nick
+        }
+        $.ajax({
+            url: '/post_userNick',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(data),
+            async: true,
+            dataType: 'json',
+            success: function (resp) {
+                if (resp['status'] == 'OK') {
+                    var userId = resp['userId'];
+                    var userNick = resp['userNick'];
+                    userData[userId]['userNick'] = userNick;
+                    VheaderContent.headerName = getUserName(userId);
+                    VchatMessages.updateUserName(userId, getUserName(userId));
+                }
+            }
+        });
+    }
+
+    $('#modal_setNick .modal-footer button.setNick_save').click(function () {
+        var inputUserNick = VsetNick.userNick;
+        postUserNick(inputUserNick);
+        closeModalByPath('#modal_setNick');
+    });
+
     $('textarea.type_msg').keydown(function (event) {
         if (event.which == 13) {
             if(event.shiftKey) {
@@ -156,6 +206,10 @@ $(function () {
                 event.preventDefault();
             }
         }
+    });
+
+    $("#modal_setNick").on("show.bs.modal", function (event) {
+        VsetNick.userNick = userData[__loginUser]['userNick'];
     });
 
     function newMessage(data) {
