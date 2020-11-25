@@ -8,7 +8,7 @@ $(function () {
         'defaultUserId': {
             'userId': 'defaultUserId',
             'userNick': 'defaultUserNick',
-            'userIcon': 'defaultUserIcon'
+            'userMug': 'defaultUserMug'
         }
     };
 
@@ -16,7 +16,8 @@ $(function () {
         el: '.msg_head div',
         data: {
             headerName: '',
-            headerStatus: '(Loading....)'
+            headerStatus: '(Loading....)',
+            headerMug: 'static/image/userImage/default.jpg'
         }
     })
 
@@ -47,6 +48,31 @@ $(function () {
             },
             reset: function () {
                 this.userNick = userData[__loginUser]['userNick'];
+            }
+        }
+    })
+
+    var VsetImage = new Vue({
+        el: '#modal_setImage .modal-content',
+        data: {
+            mugShotRaw: null,
+            imageInput: true,
+            imageArea: false,
+            abortBtn: false,
+            saveBtn: false
+        },
+        methods: {
+            afterLoadView: function () {
+                this.imageInput = false;
+                this.imageArea = true;
+                this.abortBtn = true;
+                this.saveBtn = true;
+            },
+            beforeLoadView: function () {
+                this.imageInput = true;
+                this.imageArea = false;
+                this.abortBtn = false;
+                this.saveBtn = false;
             }
         }
     })
@@ -84,15 +110,18 @@ $(function () {
             success: function (resp) {
                 var userId = resp['userId'];
                 var userNick = resp['userNick'];
-                var userImg = resp['userImg'];
+                var userMug = resp['userImg'];
                 userData[userId] = {};
                 userData[userId]['userId'] = userId;
                 userData[userId]['userNick'] = userNick;
-                userData[userId]['userImg'] = userImg;
+                userData[userId]['userMug'] = userMug;
                 if ('self' in resp) {
                     __loginUser = userId;
                     VheaderContent.headerName = getUserName(userId);
-                    VheaderContent.headerStatus = '(Normal status)'
+                    if (userData[userId]['userMug']) {
+                        VheaderContent.headerMug = userData[userId]['userMug'];
+                    }
+                    VheaderContent.headerStatus = '(Normal status)';
                 }
                 VchatMessages.updateUserName(userId, getUserName(userId));
             }
@@ -175,7 +204,7 @@ $(function () {
         $.ajax({
             url: '/post_userNick',
             type: 'POST',
-            contentType: "application/json",
+            contentType: 'application/json',
             data: JSON.stringify(data),
             async: true,
             dataType: 'json',
@@ -224,6 +253,79 @@ $(function () {
         });
         updateScrollbar('.msg_card_body');
     }
+
+    var croppieObj = $('.croppie_area').croppie({
+        viewport: {
+            type: 'circle',
+            width: 200,
+            height: 200,
+        },
+        mouseWheelZoom: false,
+        enforceBoundary: true
+    });
+    VsetImage.beforeLoadView();
+
+    function loadCroppieArea () {
+        VsetImage.afterLoadView();
+        croppieObj.croppie('bind', {
+            url: VsetImage.mugShotRaw
+        })
+    }
+
+    function readMugShotRaw(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                VsetImage.mugShotRaw = e.target.result;
+                loadCroppieArea();
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+        else {
+            swal("Sorry - you're browser doesn't support the FileReader API");
+        }
+    }
+
+    $('.croppie_input input').on('change', function () {
+        readMugShotRaw(this);
+    });
+
+    $('#modal_setImage .modal-footer button.setImage_abort').click( function () {
+        VsetImage.mugShotRaw = null;
+        VsetImage.beforeLoadView();
+    });
+
+    $('#modal_setImage .modal-footer button.setImage_save').click( function () {
+        croppieObj.croppie('result', {
+            type: 'base64',
+            format: 'png',
+            circle: false
+        }).then(function (result) {
+            var data = {
+                userImage: result
+            }
+            $.ajax({
+                url: '/post_userImage',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                async: true,
+                dataType: 'json',
+                success: function (resp) {
+                    if (resp['status'] == 'OK') {
+                        var userId = resp['userId'];
+                        var imageUrl = resp['imageUrl'];
+                        userData[userId]['userMug'] = imageUrl;
+                        if (userData[userId]['userMug']) {
+                            VheaderContent.headerMug = userData[userId]['userMug'];
+                            // update all userMug for chat massage by userId
+                        }
+                    }
+                }
+            });
+        });
+        closeModalByPath('#modal_setImage');
+    });
 
     socket.on('newMessage', function (data) {
         newMessage(data);

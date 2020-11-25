@@ -8,6 +8,7 @@ var moment = require('moment');
 var tz = require('moment-timezone');
 moment.tz.setDefault("Asia/Taipei");
 var md5 = require("md5");
+var fs = require("fs");
 const setting = require('./setting');
 
 // --------------------- Redis init
@@ -206,6 +207,54 @@ app.post('/post_userNick', function (req, res) {
         });
     }
 
+});
+
+app.post('/post_userImage', function (req, res) {
+    if (!req.session.loginUser) {
+        res.status(403).send('Permission denied');
+        return;
+    }
+    if ('userImage' in req.body) {
+        var userImageBase64 = req.body['userImage']
+        var base64header = 'data:image/png;base64,';
+        if (userImageBase64.indexOf(base64header) === 0) {
+            userImageBase64 = userImageBase64.replace(base64header, '');
+            var fileName = md5(moment().format("x").toString()) + '.png';
+            var imagePath = "static/image/userImage/" + fileName;
+            fs.writeFile(imagePath, userImageBase64, {encoding: 'base64'}, function (err) {
+                if (err) {
+                    console.log(err);
+                }
+                var key = 'account/' + req.session.loginUser;
+                RedisClient.get(key, (err, result) => {
+                    var userData = JSON.parse(result);
+                    var oldImage =  userData['img'] || '';
+                    userData['img'] = imagePath;
+                    RedisClient.set(key, JSON.stringify(userData), function (err) {
+                        if (oldImage) {
+                            fs.unlink(oldImage, () => {});
+                        }
+                    });
+                });
+                res.json({
+                    status: 'OK',
+                    msg: 'Upload user image complated',
+                    userId: req.session.loginUser,
+                    imageUrl: imagePath
+                });
+            });
+        } else {
+                res.json({
+                    status: 'ERROR',
+                    msg: `Invalid input string. Should format like "${userImageBase64}{base64_string}"`
+                });
+        }
+    } else {
+                res.json({
+                    status: 'ERROR',
+                    msg: 'Endpoint /post_userImage need a "userImage" data'
+                });
+    }
 });
 
 // --------------------- Socket.io init
