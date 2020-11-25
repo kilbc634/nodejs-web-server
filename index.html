@@ -63,7 +63,7 @@
     <template id="msgVue">
         <div class="msg_box flex-column justify-content-start mb-4" v-for="msg in msgList">
             <div class="img_cont_msg">
-                <img src="https://static.turbosquid.com/Preview/001292/481/WV/_D.jpg" class="rounded-circle user_img_msg">
+                <img :src="msg.mugShot" class="rounded-circle user_img_msg">
             </div>
             <h2 class="msg_header">
                 <span class="msg_user_name" v-if="msg.userName != ''">

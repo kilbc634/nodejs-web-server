@@ -40,7 +40,7 @@ var sessionMiddleware = session({
 
 var app = express();
 var server = http.createServer(app);  // use for socket.io
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '1mb'}));
 app.use('/static', express.static(__dirname + '/static'));
 app.use(sessionMiddleware);
 

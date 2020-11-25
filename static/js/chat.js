@@ -4,11 +4,12 @@ $(function () {
     var begin = 0;
     var msgVueTemplate = $('#msgVue').html();
     var __loginUser = '';
+    var defaultMug = 'static/image/userImage/default.jpg';
     var userData = {
         'defaultUserId': {
             'userId': 'defaultUserId',
             'userNick': 'defaultUserNick',
-            'userMug': 'defaultUserMug'
+            'userMug': defaultMug
         }
     };
 
@@ -17,22 +18,68 @@ $(function () {
         data: {
             headerName: '',
             headerStatus: '(Loading....)',
-            headerMug: 'static/image/userImage/default.jpg'
+            headerMug: defaultMug
         }
     })
 
     var VchatMessages = new Vue({
         data: {
-            // {text: 'string', userName: 'string', date: 'string', userId: 'string'}
             msgList: []
         },
         methods: {
-            updateUserName: function (userId, userName) {
+            updateUserName: function (userId) {
+                var userName = getUserName(userId);
                 for (msg of this.msgList) {
                     if (msg['userId'] == userId) {
-                        msg.userName = userName;
+                        msg['userName'] = userName;
                     }
                 }
+            },
+            updateUserMug: function (userId) {
+                var userMug = getUserMug(userId);
+                for (msg of this.msgList) {
+                    if (msg['userId'] == userId) {
+                        msg['mugShot'] = userMug;
+                    }
+                }
+            },
+            appendMsg: function (text, date, userId) {
+                var userName;
+                var mugShot;
+                if (userId in userData) {
+                    userName = getUserName(userId);
+                    mugShot = getUserMug(userId);
+                } else {
+                    userName = '';
+                    mugShot = '';
+                    loadUserData(userId);
+                }
+                this.msgList.push({
+                    text: text,
+                    date: date,
+                    userId: userId,
+                    userName: userName,
+                    mugShot: mugShot
+                });
+            },
+            insertMsg: function (text, date, userId) {
+                var userName;
+                var mugShot;
+                if (userId in userData) {
+                    userName = getUserName(userId);
+                    mugShot = getUserMug(userId);
+                } else {
+                    userName = '';
+                    mugShot = '';
+                    loadUserData(userId);
+                }
+                this.msgList.unshift({
+                    text: text,
+                    date: date,
+                    userId: userId,
+                    userName: userName,
+                    mugShot: mugShot
+                });
             }
         }
     })
@@ -118,12 +165,11 @@ $(function () {
                 if ('self' in resp) {
                     __loginUser = userId;
                     VheaderContent.headerName = getUserName(userId);
-                    if (userData[userId]['userMug']) {
-                        VheaderContent.headerMug = userData[userId]['userMug'];
-                    }
+                    VheaderContent.headerMug = getUserMug(userId);
                     VheaderContent.headerStatus = '(Normal status)';
                 }
-                VchatMessages.updateUserName(userId, getUserName(userId));
+                VchatMessages.updateUserName(userId);
+                VchatMessages.updateUserMug(userId);
             }
         });
     }
@@ -131,15 +177,17 @@ $(function () {
     function getUserName(userId) {
         var displayName = '';
         if (userId in userData) {
-            if (userData[userId]['userNick']) {
-                displayName = userData[userId]['userNick'];
-            } else {
-                displayName = userData[userId]['userId'];
-            }
-        } else {
-            loadUserData(userId);
+            displayName = userData[userId]['userNick'] || userData[userId]['userId'] || '';
         }
         return displayName;
+    }
+
+    function getUserMug(userId) {
+        var displayMug = defaultMug;
+        if (userId in userData) {
+            displayMug = userData[userId]['userMug'] || defaultMug;
+        }
+        return displayMug
     }
     
     function loadMessages(begin, amount=20) {
@@ -156,12 +204,7 @@ $(function () {
             success: function (resp) {
                 var dataList = resp['chatMessages'];
                 for (data of dataList) {
-                    VchatMessages.msgList.unshift({
-                            text: data['msg'],
-                            userName: getUserName(data['userId']),
-                            date: moment.unix(data['timestamp']).format('YYYY-MM-DD HH:mm:ss'),
-                            userId: data['userId']
-                    });
+                    VchatMessages.insertMsg(data['msg'], moment.unix(data['timestamp']).format('YYYY-MM-DD HH:mm:ss'), data['userId']);
                 }
             },
             complete: function () {
@@ -214,7 +257,7 @@ $(function () {
                     var userNick = resp['userNick'];
                     userData[userId]['userNick'] = userNick;
                     VheaderContent.headerName = getUserName(userId);
-                    VchatMessages.updateUserName(userId, getUserName(userId));
+                    VchatMessages.updateUserName(userId);
                 }
             }
         });
@@ -245,12 +288,7 @@ $(function () {
         var msg = data['msg'];
         var ts = data['timestamp'];
         var userId = data['userId'];
-        VchatMessages.msgList.push({
-            text: msg,
-            userName: getUserName(userId),
-            date: moment.unix(ts).format('YYYY-MM-DD HH:mm:ss'),
-            userId: userId
-        });
+        VchatMessages.appendMsg(msg, moment.unix(ts).format('YYYY-MM-DD HH:mm:ss'), userId);
         updateScrollbar('.msg_card_body');
     }
 
@@ -316,10 +354,8 @@ $(function () {
                         var userId = resp['userId'];
                         var imageUrl = resp['imageUrl'];
                         userData[userId]['userMug'] = imageUrl;
-                        if (userData[userId]['userMug']) {
-                            VheaderContent.headerMug = userData[userId]['userMug'];
-                            // update all userMug for chat massage by userId
-                        }
+                        VheaderContent.headerMug = getUserMug(userId);
+                        VchatMessages.updateUserMug(userId);
                     }
                 }
             });
