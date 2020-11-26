@@ -2,6 +2,7 @@ $(function () {
     moment.tz.setDefault("Asia/Taipei");
     var socket = io.connect();
     var begin = 0;
+    var _scrollToTarget = '';
     var msgVueTemplate = $('#msgVue').html();
     var __loginUser = '';
     var defaultMug = 'static/image/userImage/default.jpg';
@@ -19,12 +20,22 @@ $(function () {
             headerName: '',
             headerStatus: '(Loading....)',
             headerMug: defaultMug
+        },
+        methods: {
+            updateMessageCount: function (count) {
+                if (count) {
+                    this.headerStatus = `${count} Messages`;
+                } else {
+                    this.headerStatus = `${VchatMessages.msgListKeyCount} Messages`;
+                }
+            }
         }
     })
 
     var VchatMessages = new Vue({
         data: {
-            msgList: []
+            msgList: [],
+            msgListKeyCount: 0
         },
         methods: {
             updateUserName: function (userId) {
@@ -54,7 +65,10 @@ $(function () {
                     mugShot = '';
                     loadUserData(userId);
                 }
+                this.msgListKeyCount += 1;
+                VheaderContent.updateMessageCount(this.msgListKeyCount);
                 this.msgList.push({
+                    uKey: this.msgListKeyCount,
                     text: text,
                     date: date,
                     userId: userId,
@@ -73,7 +87,10 @@ $(function () {
                     mugShot = '';
                     loadUserData(userId);
                 }
+                this.msgListKeyCount += 1;
+                VheaderContent.updateMessageCount(this.msgListKeyCount);
                 this.msgList.unshift({
+                    uKey: this.msgListKeyCount,
                     text: text,
                     date: date,
                     userId: userId,
@@ -127,7 +144,17 @@ $(function () {
     function applyScrollbar(selector) {
         // will return DOM element of mCustomScrollbar container
         var mcs = $(selector).mCustomScrollbar({
-            theme: 'dark-3'
+            theme: 'dark-3',
+            callbacks: {
+                onTotalScrollBack: function () {
+                    if (_scrollToTarget) {
+                        return;
+                    }
+                    var topKey = VchatMessages.msgList[0]['uKey'];
+                    _scrollToTarget = `[uKey="${topKey}"]`;
+                    begin += loadMessages(begin);
+                }
+            }
         });
         var mcsContainer = mcs.find('.mCSB_container')[0];
         return mcsContainer;
@@ -138,8 +165,17 @@ $(function () {
             $(selector).mCustomScrollbar('update').mCustomScrollbar('scrollTo', 'bottom', {
                 scrollEasing: 'easeOut',
                 scrollInertia: duration
-            }, 15);
-        });
+            });
+        }, 0);
+    }
+
+    function scrollToTemp(selector, duration=0) {
+        setTimeout(() => {
+            $(selector).mCustomScrollbar('update').mCustomScrollbar('scrollTo', _scrollToTarget, {
+                scrollInertia: duration
+            });
+            _scrollToTarget = '';
+        }, 0);
     }
 
     function loadUserData(userId='') {
@@ -210,6 +246,8 @@ $(function () {
             complete: function () {
                 if (begin == 0) {
                     updateScrollbar('.msg_card_body', 0);
+                } else {
+                    scrollToTemp('.msg_card_body', 0);
                 }
             }
         });

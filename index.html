@@ -61,7 +61,7 @@
     </div>
     <!-- Template Zone -->
     <template id="msgVue">
-        <div class="msg_box flex-column justify-content-start mb-4" v-for="msg in msgList">
+        <div class="msg_box flex-column justify-content-start mb-4" v-for="msg in msgList" :uKey="msg.uKey">
             <div class="img_cont_msg">
                 <img :src="msg.mugShot" class="rounded-circle user_img_msg">
             </div>
