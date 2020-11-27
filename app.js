@@ -50,7 +50,24 @@ app.get('/', function (req, res) {
 
 app.get('/index(.html)?', function (req, res) {
     if (req.session.loginUser) {
+        req.session.room = req.session.loginUser;
         res.sendFile(__dirname + '/index.html'); 
+    } else {
+        res.redirect('/login');
+    }
+});
+
+app.get('/index(.html)?/:roomId', function (req, res) {
+    if (req.session.loginUser) {
+        var roomId = req.params['roomId'];
+        var key = 'account/' + roomId;
+        RedisClient.get(key, (err, result) => {
+            if (result !== null) {
+                req.session.room = roomId;
+            }
+            // Not found room page, will stay in current room ?
+            res.sendFile(__dirname + '/index.html');
+        });
     } else {
         res.redirect('/login');
     }
@@ -82,7 +99,7 @@ app.post('/login', function (req, res) {
         }
         req.session.regenerate((err) => {
             req.session.loginUser = account;
-            req.session.room = account;
+            req.session.room = req.session.loginUser;
             res.json({
                 status: 'OK',
                 msg: 'Login success'
@@ -127,6 +144,21 @@ app.post('/signup', function (req, res) {
 });
 
 // --------------------- User service
+
+app.get('/get_roomData', function (req, res) {
+    if (!req.session.loginUser) {
+        res.status(403).send('Permission denied');
+        return;
+    }
+    var roomId = req.query['roomId'] || req.session.room;
+    var resData = {
+        roomId: roomId
+    }
+    if (roomId == req.session.loginUser) {
+        resData['self'] = true;
+    }
+    res.json(resData);
+});
 
 app.get('/get_chatMessages', function (req, res) {
     if (!req.session.loginUser) {
@@ -220,7 +252,7 @@ app.post('/post_userImage', function (req, res) {
         if (userImageBase64.indexOf(base64header) === 0) {
             userImageBase64 = userImageBase64.replace(base64header, '');
             var fileName = md5(moment().format("x").toString()) + '.png';
-            var imagePath = "static/image/userImage/" + fileName;
+            var imagePath = 'static/image/userImage/' + fileName;
             fs.writeFile(imagePath, userImageBase64, {encoding: 'base64'}, function (err) {
                 if (err) {
                     console.log(err);

@@ -245,25 +245,20 @@ body, html {
     position: relative;
 }
 
-#action_menu_btn {
-    position: absolute;
-    right: 15px;
-    top: 5px;
+.action_menu_btn {
+    position: relative;
     color: white;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 1.5rem;
 }
 
 .action_menu {
     z-index: 1;
-    position: absolute;
+    position: relative;
     padding: 15px 0;
     background-color: rgba(0, 0, 0, 0.5);
     color: white;
     border-radius: 15px;
-    top: 10px;
-    right: 38px;
-    display: none;
 }
 
 .action_menu ul {
@@ -276,6 +271,8 @@ body, html {
     width: 100%;
     padding: 10px 15px;
     margin-bottom: 5px;
+    white-space: nowrap;
+    font-size: 1.2rem;
 }
 
 .action_menu ul li i {

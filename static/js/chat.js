@@ -10,7 +10,7 @@ $(function () {
         'defaultUserId': {
             'userId': 'defaultUserId',
             'userNick': 'defaultUserNick',
-            'userMug': defaultMug
+            'userMug': '/' + defaultMug
         }
     };
 
@@ -19,7 +19,7 @@ $(function () {
         data: {
             headerName: '',
             headerStatus: '(Loading....)',
-            headerMug: defaultMug
+            headerMug: '/' + defaultMug
         },
         methods: {
             updateMessageCount: function (count) {
@@ -221,7 +221,7 @@ $(function () {
     function getUserMug(userId) {
         var displayMug = defaultMug;
         if (userId in userData) {
-            displayMug = userData[userId]['userMug'] || defaultMug;
+            displayMug = '/' + (userData[userId]['userMug'] || defaultMug);  // to absolute path
         }
         return displayMug
     }
@@ -401,6 +401,22 @@ $(function () {
         closeModalByPath('#modal_setImage');
     });
 
+    $('#selfRoom_btn').click( function () {
+        location.assign('index');
+    });
+
+    $('#goToRoom_btn').click( function () {
+        // TODO: Modal for input room name
+    });
+
+    $('#callOwner_btn').click( function () {
+        // TODO: call discord bot API
+    });
+
+    $('#logout_btn').click( function () {
+        location.assign('logout');
+    });
+
     socket.on('newMessage', function (data) {
         newMessage(data);
         begin += 1;
@@ -412,9 +428,6 @@ $(function () {
 
     // Init zone
 
-    $('#action_menu_btn').click(function () {
-        $('.action_menu').toggle();
-    });
     autosize($('[data-autosize="true"]'));
     var scrollContainer = applyScrollbar('.msg_card_body');
     $(scrollContainer).append(msgVueTemplate);
