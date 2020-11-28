@@ -141,6 +141,18 @@ $(function () {
         }
     })
 
+    var VgoToRoom = new Vue({
+        el: '#modal_goToRoom .modal-content',
+        data: {
+            roomId: ''
+        },
+        methods: {
+            clear: function () {
+                this.roomId = '';
+            }
+        }
+    })
+
     function applyScrollbar(selector) {
         // will return DOM element of mCustomScrollbar container
         var mcs = $(selector).mCustomScrollbar({
@@ -406,7 +418,7 @@ $(function () {
     });
 
     $('#goToRoom_btn').click( function () {
-        // TODO: Modal for input room name
+        $('#modal_goToRoom').modal();
     });
 
     $('#callOwner_btn').click( function () {
@@ -415,6 +427,11 @@ $(function () {
 
     $('#logout_btn').click( function () {
         location.assign('logout');
+    });
+
+    $('#modal_goToRoom .modal-footer button.goToRoom_go').click(function () {
+        var inputRoomId = VgoToRoom.roomId;
+        location.assign('index/' + inputRoomId);
     });
 
     socket.on('newMessage', function (data) {
