@@ -206,6 +206,16 @@ app.get('/get_userData', function (req, res) {
         return;
     }
     var userId = req.query['userId'] || req.session.loginUser;
+    // response fake user for BROADCASTER
+    if (userId == setting.BROADCASTER) {
+        var resData = {
+            userId: userId,
+            userNick: '',
+            userImg: ''
+        }
+        res.json(resData);
+        return;
+    }
     var key = 'account/' + userId;
     RedisClient.get(key, (err, result) => {
         var userData = JSON.parse(result);
