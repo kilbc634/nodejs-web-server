@@ -211,7 +211,8 @@ app.get('/get_userData', function (req, res) {
         var resData = {
             userId: userId,
             userNick: '',
-            userImg: ''
+            userImg: '',
+            self: true
         }
         res.json(resData);
         return;
