@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chat!!</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.css" integrity="sha512-6qkvBbDyl5TDJtNJiC8foyEVuB6gxMBkrKy67XpqnIDxyvLLPJzmTjAj1dRJfNdmXWqD10VbJoeN4pOQqDwvRA==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.css" integrity="sha512-zxBiDORGDEAYDdKLuYU9X/JaJo/DPzE42UubfBw9yg8Qvb2YRRIQ8v4KsGHOx2H1/+sdSXyXxLXv5r7tHc9ygg==" crossorigin="anonymous" />
+    <link rel="stylesheet" type="text/css" href="/static/css/chatroom.css"></style>
+</head>
+
+<body>
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100">
+            <div class="col-md-8 col-xl-6 chat h-100">
+                <div class="card h-100">
+                    <div class="card-header msg_head">
+                        <div class="d-flex bd-highlight">
+                            <div class="img_cont">
+                                <img :src="headerMug" class="rounded-circle user_img">
+                                <span class="online_icon"></span>
+                            </div>
+                            <div class="user_info">
+                                <span>{{headerName}}</span>
+                                <p>{{headerStatus}}</p>
+                            </div>
+                            <div class="uesr_setting">
+                                <span><i class="fas fa-camera" data-toggle="modal" data-target="#modal_setImage"></i></span>
+                                <span><i class="fas fa-user-cog" data-toggle="modal" data-target="#modal_setNick"></i></span>
+                            </div>
+                            <div class="btn-group dropleft ml-auto">
+                                <span type="button" class="action_menu_btn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-bars"></i>
+                                </span>
+                                <div class="action_menu dropdown-menu dropdown-menu-right">
+                                    <ul>
+                                        <li id="selfRoom_btn"><i class="fas fa-house-user"></i>Self Room</li>
+                                        <li id="goToRoom_btn"><i class="fas fa-comments"></i></i>Go To Room</li>
+                                        <li id="callOwner_btn"><i class="fas fa-concierge-bell"></i>Call Owner</li>
+                                        <li id="logout_btn"><i class="fas fa-door-open"></i></i>Log Out</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body msg_card_body">
+                    </div>
+                    <div class="card-footer">
+                        <div class="input-group">
+                            <div class="input-group-append">
+                                <span class="input-group-text attach_btn"><i class="fas fa-paperclip"></i></span>
+                            </div>
+                            <textarea rows="1" class="form-control type_msg" placeholder="Type your message..." data-autosize="true"></textarea>
+                            <div class="input-group-append">
+                                <span class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Template Zone -->
+    <template id="msgVue">
+        <div class="msg_box flex-column justify-content-start mb-4" v-for="msg in msgList" :uKey="msg.uKey">
+            <div class="img_cont_msg">
+                <img :src="msg.mugShot" class="rounded-circle user_img_msg">
+            </div>
+            <h2 class="msg_header">
+                <span class="msg_user_name" v-if="msg.userName != ''">
+                    {{msg.userName}}
+                </span>
+                <span class="msg_datetime">
+                    {{msg.date}}
+                </span>
+            </h2>
+            <div class="msg_cotainer">
+                {{msg.text}}
+            </div>
+        </div>
+    </template>
+    <!-- Modal Zone -->
+    <div class="modal fade" id="modal_setNick" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Set user nick name</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control setNick_input" placeholder="Nick name... (Empty will use user account)" v-model="userNick">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary setNick_clear" @click="clear">
+                                <i class="fas fa-remove-format"></i>
+                            </button>
+                        </div>
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary setNick_reset" @click="reset">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary setNick_save">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_setImage" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Set user mug shot</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="croppie_input custom-file" v-show="imageInput">
+                        <input type="file" class="custom-file-input" id="customFile">
+                        <label class="custom-file-label" for="customFile">Choose image file</label>
+                    </div>
+                    <div class="croppie_area" v-show="imageArea"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary setImage_abort" v-show="abortBtn">Abort</button>
+                    <button type="button" class="btn btn-primary setImage_save" :disabled="saveBtn == false">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modal_goToRoom" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Go to room</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <input type="text" class="form-control goToRoom_input" placeholder="room name... (user account)" v-model="roomId">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary goToRoom_clear" @click="clear">
+                                <i class="fas fa-remove-format"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary goToRoom_go" :disabled="roomId == ''">Go</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Script Zone -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/malihu-custom-scrollbar-plugin/3.1.5/jquery.mCustomScrollbar.min.js" integrity="sha512-Yk47FuYNtuINE1w+t/KT4BQ7JaycTCcrvlSvdK/jry6Kcxqg5vN7/svVWCxZykVzzJHaxXk5T9jnFemZHSYgnw==" crossorigin="anonymous"></script>
+    <script src="/static/js/autosize.js"></script>
+    <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.32/moment-timezone.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/croppie/2.6.5/croppie.min.js" integrity="sha512-Gs+PsXsGkmr+15rqObPJbenQ2wB3qYvTHuJO6YJzPe/dTLvhy0fmae2BcnaozxDo5iaF8emzmCZWbQ1XXiX2Ig==" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="/static/js/chat.js"></script>
+</body>
+
+</html>

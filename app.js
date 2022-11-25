@@ -73,6 +73,15 @@ app.get('/index(.html)?/:roomId', function (req, res) {
     }
 });
 
+app.get('/broadcast(.html)?', function (req, res) {
+    // fake login for BROADCASTER user
+    req.session.regenerate((err) => {
+        req.session.loginUser = setting.BROADCASTER;
+        req.session.room = req.session.loginUser;
+        res.sendFile(__dirname + '/broadcast.html');
+    });
+});
+
 app.get('/login(.html)?', function (req, res) {
     res.sendFile(__dirname + '/login.html');
 });
