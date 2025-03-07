@@ -414,7 +414,7 @@ $(function () {
     });
 
     $('#selfRoom_btn').click( function () {
-        location.assign('index');
+        location.assign('/index');
     });
 
     $('#goToRoom_btn').click( function () {
@@ -426,12 +426,12 @@ $(function () {
     });
 
     $('#logout_btn').click( function () {
-        location.assign('logout');
+        location.assign('/logout');
     });
 
     $('#modal_goToRoom .modal-footer button.goToRoom_go').click(function () {
         var inputRoomId = VgoToRoom.roomId;
-        location.assign('index/' + inputRoomId);
+        location.assign('/index/' + inputRoomId);
     });
 
     socket.on('newMessage', function (data) {

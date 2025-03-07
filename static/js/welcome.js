@@ -16,7 +16,7 @@ $(function () {
             success: function (resp) {
                 var status = resp['status'];
                 if (status == 'OK') {
-                    location.assign('index');
+                    location.assign('/index');
                 } else {
                     console.error(resp['msg'])
                 }
@@ -41,7 +41,7 @@ $(function () {
             success: function (resp) {
                 var status = resp['status'];
                 if (status == 'OK') {
-                    location.assign('login');
+                    location.assign('/login');
                 } else {
                     console.error(resp['msg'])
                 }
